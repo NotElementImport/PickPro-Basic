@@ -60,6 +60,7 @@ let PickPro = function (selectElement) {
 
     this.addPrompt = (Label) => {
         this.m_prompt = Label;
+        console.log(Label);
         this.virtualTable.items.push(Label, '', null);
     }
 
@@ -266,7 +267,7 @@ let PickPro = function (selectElement) {
              * @param {HTMLElement} element 
              */
             element => {
-            if((element.innerHTML.includes(searchInput.value) || searchInput.value == '' || element.getAttribute('alt').includes(searchInput.value)) && (this.viewSettings.alwaysFilter == '' ? true : element.getAttribute('alt').includes(alwaysFilter)))
+            if(element.getAttribute('value') == '' || (element.innerHTML.includes(searchInput.value) || searchInput.value == '' || element.getAttribute('alt').includes(searchInput.value)) && (this.viewSettings.alwaysFilter == '' ? true : element.getAttribute('alt').includes(alwaysFilter)))
                 element.removeAttribute('hidden');
             else
                 element.setAttribute('hidden', '');
@@ -310,6 +311,7 @@ let PickPro = function (selectElement) {
 
         docBlank.body.appendChild(this.m_elements.pickRoot);
 
+        console.log(this.pickSelect.querySelectorAll('option'));
         this.pickSelect.querySelectorAll('option').forEach(element => {
             let optionVirtual = docBlank.createElement('element');
             this.m_elements.options.push(optionVirtual);
@@ -328,7 +330,8 @@ let PickPro = function (selectElement) {
                 errorDiv.classList.add(['img']);
             }
 
-            optionVirtual.appendChild(img);
+            if(element.getAttribute('value') != '')
+                optionVirtual.appendChild(img);
 
             let text = docBlank.createElement('div');
             text.innerHTML = element.getAttribute('aria-label');
@@ -374,16 +377,20 @@ let PickPro = function (selectElement) {
     };
 };
 
-document.body.onload = () => {
+window.addEventListener('load', () => {
     document.querySelectorAll('input[type=pick-on-server]').forEach(element=>{
+        let pickObject = new PickPro();
+        pickObject.virtualTable.createTable();
+
+        let prompt = element.getAttribute('prompt');
+        if(prompt)
+            pickObject.addPrompt(prompt);
+
         window.addEventListener('focus', () => {
             pickObject.m_keep_selectedIndex.index = pickObject.pickSelect.selectedIndex;
             pickObject.m_keep_selectedIndex.value = pickObject.pickSelect.options[pickObject.pickSelect.selectedIndex].value;
             ajaxLogic();
         });
-
-        let pickObject = new PickPro();
-        pickObject.virtualTable.createTable();
 
         let nameInput = element.getAttribute('name');
         if(nameInput)
@@ -428,7 +435,13 @@ document.body.onload = () => {
             textField.before(innerImage);
 
             pickObject.onreturn = () => {
-                innerImage.src = pickObject.returnValue.name;
+                if(pickObject.returnValue.value != '') {
+                    innerImage.hidden = false;
+                    innerImage.src = pickObject.returnValue.name;
+                }
+                else {
+                    innerImage.hidden = true;
+                }
                 textField.innerText = pickObject.returnValue.label;
             };
         }
@@ -449,6 +462,7 @@ document.body.onload = () => {
                     pickObject.virtualTable.items.assign(e);
                     disabled = false;
                     pickObject.virtualTable.items.select();
+                    console.log(pickObject.pickSelect.selectedIndex);
                 }
             });
         };
@@ -490,4 +504,4 @@ document.body.onload = () => {
         ajaxLogic();
     });
 
-}
+});
