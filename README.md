@@ -1,3 +1,8 @@
+* How to use
+* How work
+* Settings
+* HTML as input
+
 # How to use
 
 This libary to js, give a image or file, pick modal window.
@@ -19,8 +24,12 @@ let pickModal = new PickPro(
 let pickModal = new PickPro();
 pickModal.virtualTable.createTable();
 ```
+And open
+```js
+pickModal.open();
+```
 
-How it work?<br>
+# How it work?
 PickPro use \<select\> tag, and read \<option\> tags
 
 Example:
@@ -62,3 +71,4 @@ pickModal.virtualTable.items.assign({
     ...
 });
 ```
+# Settings
