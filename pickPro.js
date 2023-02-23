@@ -76,6 +76,18 @@ let PickPro = function (selectElement) {
                 for(const [key, value] of Object.entries(items)) {
                     this.virtualTable.items.push(key, value[0], value[1]);
                 }
+            },
+            popByValue : (value) => {
+                let end = false;
+                this.pickSelect.querySelectorAll('option').forEach(element => {
+                    if(end)
+                        return;
+
+                    if(element.value == value) {
+                        element.remove();
+                        end = true;
+                    }
+                });
             }
         }
     };
@@ -325,7 +337,7 @@ let PickPro = function (selectElement) {
     };
 };
 
-(() => {
+document.body.onload = () => {
     document.querySelectorAll('input[type=pick-on-server]').forEach(element=>{
         let pickObject = new PickPro();
         pickObject.virtualTable.createTable();
@@ -434,4 +446,4 @@ let PickPro = function (selectElement) {
         ajaxLogic();
     });
 
-}).call()
+}
