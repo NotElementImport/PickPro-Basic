@@ -60,7 +60,6 @@ let PickPro = function (selectElement) {
 
     this.addPrompt = (Label) => {
         this.m_prompt = Label;
-        console.log(Label);
         this.virtualTable.items.push(Label, '', null);
     }
 
@@ -106,6 +105,21 @@ let PickPro = function (selectElement) {
                 if(this.m_prompt != '')
                     this.addPrompt(this.m_prompt);
             },
+            selectByValue : (value) => {
+                value = value.trim();
+                this.pickSelect.selectedIndex = 0;
+                let allOptions = this.pickSelect.querySelectorAll('option');
+                for(let i = 0; i < allOptions.length; i++) {
+                    if(allOptions[i].value.trim() == value) {
+                        this.pickSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+
+                this.returnValue.value = value;
+                this.returnValue.name = this.pickSelect.options[this.pickSelect.selectedIndex].innerHTML;
+                this.returnValue.label = this.pickSelect.options[this.pickSelect.selectedIndex].getAttribute('aria-label');
+            },
             select : (index = null) => {
                 if(index == null) {
                     if(this.m_keep_selectedIndex.index != -1) {
@@ -113,6 +127,7 @@ let PickPro = function (selectElement) {
                             this.pickSelect.selectedIndex = this.m_keep_selectedIndex.index;
                         }
                         else {
+                            this.pickSelect.selectedIndex = 0;
                             let allOptions = this.pickSelect.querySelectorAll('option');
                             for(let i = 0; i < allOptions.length; i++) {
                                 if(allOptions[i].value == this.m_keep_selectedIndex.value) {
@@ -126,6 +141,10 @@ let PickPro = function (selectElement) {
                 else {
                     this.pickSelect.selectedIndex = index;
                 }
+
+                this.returnValue.value = this.pickSelect.options[this.pickSelect.selectedIndex].value;
+                this.returnValue.name = this.pickSelect.options[this.pickSelect.selectedIndex].innerHTML;
+                this.returnValue.label = this.pickSelect.options[this.pickSelect.selectedIndex].getAttribute('aria-label');
             }
         }
     };
@@ -311,27 +330,27 @@ let PickPro = function (selectElement) {
 
         docBlank.body.appendChild(this.m_elements.pickRoot);
 
-        console.log(this.pickSelect.querySelectorAll('option'));
         this.pickSelect.querySelectorAll('option').forEach(element => {
             let optionVirtual = docBlank.createElement('element');
             this.m_elements.options.push(optionVirtual);
             optionVirtual.setAttribute('alt', element.innerHTML);
 
-            let img = docBlank.createElement('img');
-            img.src = element.innerHTML;
-
-            img.onerror = () => {
-                let errorDiv = docBlank.createElement('div');
-                img.before(errorDiv);
-                img.remove();
-
-                errorDiv.innerHTML = 'preview <br> not found'
-
-                errorDiv.classList.add(['img']);
-            }
-
-            if(element.getAttribute('value') != '')
+            if(element.getAttribute('value') != '') {
+                let img = docBlank.createElement('img');
+                img.src = element.innerHTML;
+    
+                img.onerror = () => {
+                    let errorDiv = docBlank.createElement('div');
+                    img.before(errorDiv);
+                    img.remove();
+    
+                    errorDiv.innerHTML = 'preview <br> not found'
+    
+                    errorDiv.classList.add(['img']);
+                }
+    
                 optionVirtual.appendChild(img);
+            }
 
             let text = docBlank.createElement('div');
             text.innerHTML = element.getAttribute('aria-label');
@@ -382,6 +401,8 @@ window.addEventListener('load', () => {
         let pickObject = new PickPro();
         pickObject.virtualTable.createTable();
 
+        let init = false;
+
         let prompt = element.getAttribute('prompt');
         if(prompt)
             pickObject.addPrompt(prompt);
@@ -400,6 +421,7 @@ window.addEventListener('load', () => {
 
         let disabled = true;
         let error = false;
+        let value = element.getAttribute('value');
 
         let alwaysFilter = element.getAttribute('filter');
         if(alwaysFilter) 
@@ -424,7 +446,7 @@ window.addEventListener('load', () => {
             input.setAttribute('style', style);
 
         let textField = document.createElement('span');
-        textField.innerText = 'Double click to open';
+        textField.innerText = 'Click to open';
         input.appendChild(textField);
 
         if(asLogic == 'image') {
@@ -461,13 +483,24 @@ window.addEventListener('load', () => {
                 if(!error) {
                     pickObject.virtualTable.items.assign(e);
                     disabled = false;
-                    pickObject.virtualTable.items.select();
-                    console.log(pickObject.pickSelect.selectedIndex);
+
+                    if(init == false) {
+                        if(value != null)
+                            pickObject.virtualTable.items.selectByValue(value);
+
+                        init = true;
+                    }
+                    else {
+                        pickObject.virtualTable.items.select();
+                    }
+
+                    if(pickObject.onreturn)
+                        pickObject.onreturn();
                 }
             });
         };
 
-        input.addEventListener('dblclick', event => {
+        input.addEventListener('click', event => {
             if(disabled == false) {
                 pickObject.open();
             }
