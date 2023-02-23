@@ -19,6 +19,7 @@ let PickPro = function (selectElement) {
         pathToCss : '/',
         title : 'PickPro v1',
         alwaysFilter : '',
+        prompt : '',
         directoryAll : 'All files'
     };
 
@@ -374,6 +375,7 @@ document.body.onload = () => {
             input.setAttribute('style', style);
 
         let textField = document.createElement('span');
+        textField.innerText = 'Double click to open';
         input.appendChild(textField);
 
         if(asLogic == 'image') {

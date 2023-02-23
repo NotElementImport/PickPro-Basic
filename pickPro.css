@@ -164,6 +164,7 @@ div.imageRoot element div.img {
 div.imageRoot element div {
     user-select: none;
     display: flex;
+    color: #5c5c5c;
     justify-content: center;
     align-items: center;
     border: none;
@@ -222,6 +223,7 @@ div.input-pick {
     padding: 0.1em;
     margin: 0.1em;
     cursor: pointer;
+    color: #5c5c5c;
     min-width: 9em;
     height: 1.65em;
     border: solid 1px gray;
