@@ -116,18 +116,18 @@ let PickPro = function (selectElement) {
                     }
                 }
 
-                this.returnValue.value = value;
+                this.returnValue.value = this.pickSelect.options[this.pickSelect.selectedIndex].value;
                 this.returnValue.name = this.pickSelect.options[this.pickSelect.selectedIndex].innerHTML;
                 this.returnValue.label = this.pickSelect.options[this.pickSelect.selectedIndex].getAttribute('aria-label');
             },
             select : (index = null) => {
+                this.pickSelect.selectedIndex = 0;
                 if(index == null) {
                     if(this.m_keep_selectedIndex.index != -1) {
                         if(this.pickSelect.options[this.m_keep_selectedIndex.index].value == this.m_keep_selectedIndex.value) {
                             this.pickSelect.selectedIndex = this.m_keep_selectedIndex.index;
                         }
                         else {
-                            this.pickSelect.selectedIndex = 0;
                             let allOptions = this.pickSelect.querySelectorAll('option');
                             for(let i = 0; i < allOptions.length; i++) {
                                 if(allOptions[i].value == this.m_keep_selectedIndex.value) {
@@ -438,7 +438,7 @@ window.addEventListener('load', () => {
             asLogic = 'file';
 
         if(classes)
-            input.setAttribute('class', 'input-pick '+classes);
+            input.setAttribute('class', classes + ' input-pick');
         else 
             input.setAttribute('class', 'input-pick');
 
