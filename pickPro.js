@@ -19,7 +19,6 @@ let PickPro = function (selectElement) {
         pathToCss : '/',
         title : 'PickPro v1',
         alwaysFilter : '',
-        prompt : '',
         directoryAll : 'All files'
     };
 
@@ -52,6 +51,17 @@ let PickPro = function (selectElement) {
         */
         pickRoot : null
     };
+
+    this.m_prompt = '';
+    this.m_keep_selectedIndex = {
+        index : -1,
+        value : 0
+    };
+
+    this.addPrompt = (Label) => {
+        this.m_prompt = Label;
+        this.virtualTable.items.push(Label, '', null);
+    }
 
     this.virtualTable = {
         createTable : (items = {}) => {
@@ -89,6 +99,32 @@ let PickPro = function (selectElement) {
                         end = true;
                     }
                 });
+            },
+            clean : () => {
+                this.pickSelect.innerHTML = "";
+                if(this.m_prompt != '')
+                    this.addPrompt(this.m_prompt);
+            },
+            select : (index = null) => {
+                if(index == null) {
+                    if(this.m_keep_selectedIndex.index != -1) {
+                        if(this.pickSelect.options[this.m_keep_selectedIndex.index].value == this.m_keep_selectedIndex.value) {
+                            this.pickSelect.selectedIndex = this.m_keep_selectedIndex.index;
+                        }
+                        else {
+                            let allOptions = this.pickSelect.querySelectorAll('option');
+                            for(let i = 0; i < allOptions.length; i++) {
+                                if(allOptions[i].value == this.m_keep_selectedIndex.value) {
+                                    this.pickSelect.selectedIndex = i;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                else {
+                    this.pickSelect.selectedIndex = index;
+                }
             }
         }
     };
@@ -340,6 +376,12 @@ let PickPro = function (selectElement) {
 
 document.body.onload = () => {
     document.querySelectorAll('input[type=pick-on-server]').forEach(element=>{
+        window.addEventListener('focus', () => {
+            pickObject.m_keep_selectedIndex.index = pickObject.pickSelect.selectedIndex;
+            pickObject.m_keep_selectedIndex.value = pickObject.pickSelect.options[pickObject.pickSelect.selectedIndex].value;
+            ajaxLogic();
+        });
+
         let pickObject = new PickPro();
         pickObject.virtualTable.createTable();
 
@@ -388,8 +430,6 @@ document.body.onload = () => {
             pickObject.onreturn = () => {
                 innerImage.src = pickObject.returnValue.name;
                 textField.innerText = pickObject.returnValue.label;
-
-                console.log(pickObject.pickSelect.selectedIndex);
             };
         }
 
@@ -398,6 +438,7 @@ document.body.onload = () => {
         input.appendChild(pickObject.pickSelect);
 
         let ajaxLogic = () => {
+            pickObject.virtualTable.items.clean();
             error = false;
             disabled = true;
             fetch(hrefAjax,{
@@ -407,6 +448,7 @@ document.body.onload = () => {
                 if(!error) {
                     pickObject.virtualTable.items.assign(e);
                     disabled = false;
+                    pickObject.virtualTable.items.select();
                 }
             });
         };

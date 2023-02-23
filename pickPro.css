@@ -224,6 +224,7 @@ div.input-pick {
     margin: 0.1em;
     cursor: pointer;
     color: #5c5c5c;
+    user-select: none;
     min-width: 9em;
     height: 1.65em;
     border: solid 1px gray;
