@@ -33,7 +33,7 @@ class PickUI {
     object(object, ...arg) {
         return {
             display : () => {
-                if(this.Interface.m_root_for_adding_object) {
+                if(this.Interface) {
                     this.Interface.m_root_for_adding_object.appendChild(
                         object
                     );
@@ -144,10 +144,12 @@ class PickUI {
                     key = key.replace('-webkit', 'webkit');
                     
                     let keyMatch = key.match(/-[a-z]/gm);
-                    keyMatch.forEach(item => {
-                        let newVal = item.substring(1).toUpperCase();
-                        key = key.replace(item, newVal);
-                    });
+                    if(keyMatch) {
+                        keyMatch.forEach(item => {
+                            let newVal = item.substring(1).toUpperCase();
+                            key = key.replace(item, newVal);
+                        });
+                    }
 
                     object.style[key] = value;
                 }

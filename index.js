@@ -17,8 +17,8 @@
 let data = new PickFileUI(null);
 
 PickUI.createObject('div')
-    .putChild(PickUI.createObject())
-    .thread(object => {
+    .putChild(PickUI.createObject().self())
+    .thread(async object => {
         PickUI.object(object)
             .beALastChildren()
             .addStyle({
