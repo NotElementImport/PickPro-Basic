@@ -1,6 +1,10 @@
 let Settings = {
     PickPro : {
-        defaultCssDir : ''
+        defaultCssDir : '',
+        addFile : {
+            href : '',
+            label : 'Add file'
+        }
     }
 };
 
@@ -28,6 +32,7 @@ let PickPro = function (selectElement) {
         label : null,
     };
 
+    this.onaddfileend = null;
     this.onreturn = null;
 
     this.m_elements = {
@@ -45,6 +50,7 @@ let PickPro = function (selectElement) {
              */
             search : null
         },
+        empty : null,
         options : [],
         /** 
         * @type { HTMLElement }
@@ -262,6 +268,10 @@ let PickPro = function (selectElement) {
         });
         this.m_elements.nav.root.appendChild(this.m_elements.nav.search);
 
+        if(Settings.PickPro.addFile.href != '') {
+            this.m_addFile();
+        }
+
         this.m_check_whats_is_filter();
 
         switch(this.viewSettings.mode) {
@@ -272,6 +282,58 @@ let PickPro = function (selectElement) {
                 this.m_mode_image();
                 break;
         }
+    };
+
+    this.clearContent = () => {
+        if(this.m_window != null && this.m_window.closed == false)
+        {
+            if(this.m_elements.nav.footer)
+            this.m_elements.nav.footer.innerHTML = '';
+
+            if(this.m_elements.empty)
+                this.m_elements.empty.remove();
+
+            this.m_elements.pickRoot.innerHTML = 'Loading...';
+        }
+    }
+    
+    this.reloadData = () => {
+        if(this.m_window != null && this.m_window.closed == false)
+        {
+            this.m_elements.pickRoot.innerHTML = '';
+
+            switch(this.viewSettings.mode) {
+                case 'file':
+                    this.m_mode_file();
+                    break;
+                case 'image':
+                    this.m_mode_image();
+                    break;
+            }
+        }
+    }
+
+    this.m_addFile = () => {
+        let addFileButton = document.createElement('button');
+        addFileButton.innerText = Settings.PickPro.addFile.label;
+
+        addFileButton.classList.add(['add-file']);
+        addFileButton.addEventListener('click', () => {
+            let dir = '';
+            if(this.viewSettings.alwaysFilter.startsWith('/')) {
+                dir = '/?folder='+this.viewSettings.alwaysFilter.substring(1, this.viewSettings.alwaysFilter.length);
+            }
+
+            let winAddFile = window.open(Settings.PickPro.addFile.href+dir, 'PickAddFile', 'width=600,height=480,toolbar=no,menubar=no,resizable=yes');
+            
+            winAddFile.onunload = () => {
+                if(this.onaddfileend != null) {
+                    this.onaddfileend();
+                }
+            };
+        });
+
+        this.m_elements.nav.root.appendChild(addFileButton);
     };
 
     this.m_filter = () => {
@@ -392,6 +454,7 @@ let PickPro = function (selectElement) {
         this.m_elements.nav.footer.appendChild(sizeOf);
 
         this.m_elements.pickRoot.after(empty);
+        this.m_elements.empty = empty;
         this.m_filter();
     };
 };
@@ -410,8 +473,17 @@ window.addEventListener('load', () => {
         window.addEventListener('focus', () => {
             pickObject.m_keep_selectedIndex.index = pickObject.pickSelect.selectedIndex;
             pickObject.m_keep_selectedIndex.value = pickObject.pickSelect.options[pickObject.pickSelect.selectedIndex].value;
+            
             ajaxLogic();
         });
+        pickObject.onaddfileend = () => {
+            pickObject.m_keep_selectedIndex.index = pickObject.pickSelect.selectedIndex;
+            pickObject.m_keep_selectedIndex.value = pickObject.pickSelect.options[pickObject.pickSelect.selectedIndex].value;
+
+            pickObject.clearContent();
+
+            ajaxLogic();
+        };
 
         let nameInput = element.getAttribute('name');
         if(nameInput)
@@ -446,7 +518,7 @@ window.addEventListener('load', () => {
             input.setAttribute('style', style);
 
         let textField = document.createElement('span');
-        textField.innerText = 'Click to open';
+        textField.innerText = 'Loading...';
         input.appendChild(textField);
 
         if(asLogic == 'image') {
@@ -472,32 +544,46 @@ window.addEventListener('load', () => {
         pickObject.pickSelect.name = element.name;
         input.appendChild(pickObject.pickSelect);
 
+        let isFetching = false;
         let ajaxLogic = () => {
+            pickObject.clearContent();
             pickObject.virtualTable.items.clean();
+            
             error = false;
             disabled = true;
-            fetch(hrefAjax,{
-                mode: 'no-cors',
-                method: 'GET'
-            }).then(e => e.json()).then(e => {
-                if(!error) {
-                    pickObject.virtualTable.items.assign(e);
-                    disabled = false;
 
-                    if(init == false) {
-                        if(value != null)
-                            pickObject.virtualTable.items.selectByValue(value);
-
-                        init = true;
+            if(isFetching == false) {
+                isFetching = true;
+                fetch(hrefAjax,{
+                    mode: 'no-cors',
+                    method: 'GET'
+                }).then(e => e.json()).then(e => {
+                    if(!error) {
+                        isFetching = false;
+                        pickObject.virtualTable.items.assign(e);
+                        disabled = false;
+    
+                        if(init == false) {
+                            if(value != null){
+                                pickObject.virtualTable.items.selectByValue(value);
+                            }
+                            else {
+                                pickObject.virtualTable.items.select();
+                            }
+    
+                            init = true;
+                        }
+                        else {
+                            pickObject.virtualTable.items.select();
+                            pickObject.reloadData();
+                        }
+    
+                        if(pickObject.onreturn)
+                            pickObject.onreturn();
                     }
-                    else {
-                        pickObject.virtualTable.items.select();
-                    }
-
-                    if(pickObject.onreturn)
-                        pickObject.onreturn();
-                }
-            });
+                });
+            }
+            
         };
 
         input.addEventListener('click', event => {
