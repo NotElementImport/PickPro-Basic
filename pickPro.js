@@ -1,626 +1,528 @@
-let Settings = {
-    PickPro : {
-        defaultCssDir : '',
-        addFile : {
-            href : '',
-            label : 'Add file'
-        }
-    }
-};
+// let PickRuleObject = function () {
 
-let PickPro = function (selectElement) {
-    /**
-     * @type {HTMLSelectElement}
-     */
-    this.pickSelect = selectElement;
-    
-    /**
-     * @type {Window | null} 
-     */
-    this.m_window = null; 
-    this.viewSettings = {
-        mode : 'file',
-        pathToCss : '/',
-        title : 'PickPro v1',
-        alwaysFilter : '',
-        directoryAll : 'All files'
-    };
+// }
 
-    this.returnValue = {
-        name : null,
-        value : null,
-        label : null,
-    };
+// let PickProBasicUI = function (parent) {
+//     /**
+//      * @type {PickProInterface}
+//      */
+//     this.parent = parent;
 
-    this.onaddfileend = null;
-    this.onreturn = null;
+//     this.drawInner = function () {
 
-    this.m_elements = {
-        nav : {
-            /**
-             * @type { HTMLElement }
-             */
-            root : null,
-            /**
-             * @type { HTMLElement }
-             */
-            footer : null,
-            /**
-             * @type { HTMLInputElement }
-             */
-            search : null
-        },
-        empty : null,
-        options : [],
-        /** 
-        * @type { HTMLElement }
-        */
-        pickRoot : null
-    };
+//     }
 
-    this.m_prompt = '';
-    this.m_keep_selectedIndex = {
-        index : -1,
-        value : 0
-    };
+//     this.drawHeader = function () {
 
-    this.addPrompt = (Label) => {
-        this.m_prompt = Label;
-        this.virtualTable.items.push(Label, '', null);
-    }
+//     }
 
-    this.virtualTable = {
-        createTable : (items = {}) => {
-            this.pickSelect = document.createElement('select');
+//     this.drawFooter = function () {
 
-            for(const [key, value] of Object.entries(items)) {
-                this.virtualTable.items.push(key, value[0], value[1]);
-            }
-        },
-        items : {
-            push : (label, value, name) => {
-                if(this.pickSelect == null)
-                    return;
+//     }
+// }
 
-                let option = document.createElement('option');
-                option.setAttribute('aria-label', label);
-                option.setAttribute('value', value);
-                option.innerHTML = name;
+// let PickProFileUI = function (parent) {
+//     /**
+//      * @type {PickProInterface}
+//      */
+//     this.parent = parent;
 
-                this.pickSelect.appendChild(option);
-            },
-            assign : (items) => {
-                for(const [key, value] of Object.entries(items)) {
-                    this.virtualTable.items.push(key, value[0], value[1]);
-                }
-            },
-            popByValue : (value) => {
-                let end = false;
-                this.pickSelect.querySelectorAll('option').forEach(element => {
-                    if(end)
-                        return;
+//     this.drawInner = function () {
 
-                    if(element.value == value) {
-                        element.remove();
-                        end = true;
-                    }
-                });
-            },
-            clean : () => {
-                this.pickSelect.innerHTML = "";
-                if(this.m_prompt != '')
-                    this.addPrompt(this.m_prompt);
-            },
-            selectByValue : (value) => {
-                value = value.trim();
-                this.pickSelect.selectedIndex = 0;
-                let allOptions = this.pickSelect.querySelectorAll('option');
-                for(let i = 0; i < allOptions.length; i++) {
-                    if(allOptions[i].value.trim() == value) {
-                        this.pickSelect.selectedIndex = i;
-                        break;
-                    }
-                }
+//     }
 
-                this.returnValue.value = this.pickSelect.options[this.pickSelect.selectedIndex].value;
-                this.returnValue.name = this.pickSelect.options[this.pickSelect.selectedIndex].innerHTML;
-                this.returnValue.label = this.pickSelect.options[this.pickSelect.selectedIndex].getAttribute('aria-label');
-            },
-            select : (index = null) => {
-                this.pickSelect.selectedIndex = 0;
-                if(index == null) {
-                    if(this.m_keep_selectedIndex.index != -1) {
-                        if(this.pickSelect.options[this.m_keep_selectedIndex.index].value == this.m_keep_selectedIndex.value) {
-                            this.pickSelect.selectedIndex = this.m_keep_selectedIndex.index;
-                        }
-                        else {
-                            let allOptions = this.pickSelect.querySelectorAll('option');
-                            for(let i = 0; i < allOptions.length; i++) {
-                                if(allOptions[i].value == this.m_keep_selectedIndex.value) {
-                                    this.pickSelect.selectedIndex = i;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                else {
-                    this.pickSelect.selectedIndex = index;
-                }
+//     this.drawHeader = function () {
 
-                this.returnValue.value = this.pickSelect.options[this.pickSelect.selectedIndex].value;
-                this.returnValue.name = this.pickSelect.options[this.pickSelect.selectedIndex].innerHTML;
-                this.returnValue.label = this.pickSelect.options[this.pickSelect.selectedIndex].getAttribute('aria-label');
-            }
-        }
-    };
+//     }
 
-    this.open = () => {
-        if(this.m_window == null || this.m_window.closed) {
-            this.m_window = window.open('', 'PickPro', 'width=600,height=480,toolbar=no,menubar=no,resizable=yes');
-            this.m_window.document.title = this.viewSettings.title;
-            this.m_window.document.body.innerHTML = "";
+//     this.drawFooter = function () {
 
-            let link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.type = 'text/css';
-            link.href = `${this.viewSettings.pathToCss}/pickPro.css`;
+//     }
+// }
 
-            this.m_window.document.head.appendChild(
-                link
-            );
+// let PickProImageUI = function (parent) {
+//     /**
+//      * @type {PickProInterface}
+//      */
+//     this.parent = parent;
 
-            this.m_build_by_mode();
-        }
-    };
+//     this.drawInner = function () {
+//         this.parent.object.add('test');
+//     }
 
-    this.m_select_by_value = (value) => {
-        for(let i = 0; i < this.pickSelect.options.length; i++) {
-            if(this.pickSelect.options[i].value == value) {
-                this.pickSelect.selectedIndex = i;
+//     this.drawHeader = function () {
 
-                this.returnValue.value = value;
-                this.returnValue.name = this.pickSelect.options[i].innerHTML;
-                this.returnValue.label = this.pickSelect.options[i].getAttribute('aria-label');
+//     }
 
-                if(this.onreturn != null)
-                    this.onreturn();
-                break;
-            }
-        }
+//     this.drawFooter = function () {
 
-        this.m_window.close();
-    };
+//     }
+// }
 
-    this.m_check_whats_is_filter = () => {
-        let docBlank = this.m_window.document;
+// let PickProInterface = function () {
+//     this.m_type_pick = 'basic';
+//     /**
+//      * @type {PickProImageUI|null}
+//      */
+//     this.m_type_object = null;
+//     this.m_where_add = '*';
 
-        if(this.viewSettings.alwaysFilter.startsWith('/')) {
-            if(this.viewSettings.alwaysFilter == '/') {
-                let directory = docBlank.createElement('ul');
-    
-                let element = docBlank.createElement('span');
-                element.innerHTML = "&#128448";
-    
-                directory.appendChild(element);
+//     this.m_filter = {
+//         name : "",
+//         type : "direction"
+//     };
 
-                element = docBlank.createElement('span');
-                element.innerHTML = this.viewSettings.directoryAll;
-    
-                directory.appendChild(element);
-    
-                docBlank.body.appendChild(directory);
-            }
-            else {
-                let directory = docBlank.createElement('ul');
-                let splitData = this.viewSettings.alwaysFilter.split('/');
-    
-                let element = docBlank.createElement('span');
-                element.innerHTML = "&#128448";
-    
-                directory.appendChild(element);
-    
-                for(let i = 1; i < splitData.length; i++)
-                {
-                    let element = docBlank.createElement('span');
-                    element.innerHTML = splitData[i];
-    
-                    directory.appendChild(element);
-                }
-    
-                docBlank.body.appendChild(directory);
-            }
-        }
-        else if(this.viewSettings.alwaysFilter.startsWith('@')) {
-            let directory = docBlank.createElement('ul');
+//     this.m_self_rules_ui = [
 
-            let element = docBlank.createElement('span');
-            element.innerHTML = "&#127760;";
+//     ];
 
-            directory.appendChild(element);
+//     this.m_generate_logic = {
+//         cssPath : '',
+//         autoDetectChanges : false
+//     };
 
-            element = docBlank.createElement('span');
-            element.innerHTML = this.viewSettings.alwaysFilter.substring(1, this.viewSettings.alwaysFilter.length);
+//     this.m_window = {
+//         title : "",
+//         /**
+//          * @type {Window}
+//          */
+//         window : null,
+//         width : 400,
+//         height : 400
+//     };
 
-            directory.appendChild(element);
+//     this.m_content = {
+//         virtualSelect : {
+//             /**
+//              * @type {HTMLSelectElement}
+//              */
+//             object : null,
+//             selected : {
+//                 index : 0,
+//                 value : ''
+//             }
+//         },
+//         nav : {
+//             /**
+//              * @type {HTMLElement}
+//              */
+//             object : null,
+//             /**
+//              * @type {HTMLInputElement}
+//              */
+//             defaultSearch : null
+//         },
+//         inner : {
+//             /**
+//              * @type {HTMLElement}
+//              */
+//             object : null
+//         },
+//         footer : {
+//             /**
+//              * @type {HTMLElement}
+//              */
+//             object : null
+//         }
+//     };
 
-            docBlank.body.appendChild(directory);
-        }
-    }
+//     this.events = {
 
-    this.m_build_by_mode = () => {
-        this.m_elements.nav.root = this.m_window.document.createElement('nav');
-        this.m_window.document.body.appendChild(
-            this.m_elements.nav.root
-        );
+//     };
 
-        this.m_elements.nav.footer = this.m_window.document.createElement('footer');
-        this.m_window.document.body.appendChild(
-            this.m_elements.nav.footer
-        );
+//     this.items = {
+//         /**
+//          * Add localy option
+//          * 
+//          * @param {string} content 
+//          * @param {string} value 
+//          * @param {{}} attributes Works as {attribute_name : attribute_value}
+//          */
+//         push : (content, value, attributes = {}, silentMode = false) => {
 
-        this.m_elements.options = [];
-
-        this.m_elements.nav.search = this.m_window.document.createElement('input');
-        this.m_elements.nav.search.type = 'search';
-        this.m_elements.nav.search.addEventListener('keyup', event => {
-            this.m_filter();
-        });
-        this.m_elements.nav.root.appendChild(this.m_elements.nav.search);
-
-        if(Settings.PickPro.addFile.href != '') {
-            this.m_addFile();
-        }
-
-        this.m_check_whats_is_filter();
-
-        switch(this.viewSettings.mode) {
-            case 'file':
-                this.m_mode_file();
-                break;
-            case 'image':
-                this.m_mode_image();
-                break;
-        }
-    };
-
-    this.clearContent = () => {
-        if(this.m_window != null && this.m_window.closed == false)
-        {
-            if(this.m_elements.nav.footer)
-            this.m_elements.nav.footer.innerHTML = '';
-
-            if(this.m_elements.empty)
-                this.m_elements.empty.remove();
-
-            this.m_elements.pickRoot.innerHTML = 'Loading...';
-        }
-    }
-    
-    this.reloadData = () => {
-        if(this.m_window != null && this.m_window.closed == false)
-        {
-            this.m_elements.pickRoot.innerHTML = '';
-
-            switch(this.viewSettings.mode) {
-                case 'file':
-                    this.m_mode_file();
-                    break;
-                case 'image':
-                    this.m_mode_image();
-                    break;
-            }
-        }
-    }
-
-    this.m_addFile = () => {
-        let addFileButton = document.createElement('button');
-        addFileButton.innerText = Settings.PickPro.addFile.label;
-
-        addFileButton.classList.add(['add-file']);
-        addFileButton.addEventListener('click', () => {
-            let dir = '';
-            if(this.viewSettings.alwaysFilter.startsWith('/')) {
-                dir = '/?folder='+this.viewSettings.alwaysFilter.substring(1, this.viewSettings.alwaysFilter.length);
-            }
-
-            let winAddFile = window.open(Settings.PickPro.addFile.href+dir, 'PickAddFile', 'width=600,height=480,toolbar=no,menubar=no,resizable=yes');
+//             if(this.m_generate_logic.autoDetectChanges && silentMode == false)
+//                 this.updateContent();
+//         },
+//         /**
+//          * Remove all items
+//          * 
+//          * @param {boolean} silentMode If enable autoDetectChanges, silentMode disable autoDetectChanges
+//          */
+//         clear : (silentMode = false) => {
+//             this.m_content.virtualSelect.object.innerHTML = "";
             
-            winAddFile.onunload = () => {
-                if(this.onaddfileend != null) {
-                    this.onaddfileend();
-                }
-            };
-        });
+//             if(this.m_generate_logic.autoDetectChanges && silentMode == false)
+//                 this.updateContent();
+//         }
+//     };
 
-        this.m_elements.nav.root.appendChild(addFileButton);
-    };
+//     this.params = {
+//         /**
+//          * Set name for Form
+//          * 
+//          * @param {string} name 
+//          */
+//         setName : (name) => {
+//             this.m_content.virtualSelect.object.name = name;
+//         },
+//         autoDetectChanges : (value) => {
+//             this.m_generate_logic.autoDetectChanges = value;
+//         },
+//         setCssRoute : (path = '/') => {
+//             let origin = location.origin.substring(0, location.origin.length);
+//             if(path.startsWith('http://') || path.startsWith('https://')) {
+//                 if(path.endsWith('.css')) {
+//                     this.m_generate_logic.cssPath = path;
+//                 }
+//                 else
+//                 {
+//                     this.m_generate_logic.cssPath = path + "/pickPro.css";
+//                 }
+//             }
+//             else if(path.startsWith('/')) {
+//                 if(path.endsWith('.css')) {
+//                     this.m_generate_logic.cssPath = origin + path;
+//                 }
+//                 else
+//                 {
+//                     this.m_generate_logic.cssPath = origin + path + "/pickPro.css";
+//                 }
+//             }
+//             else {
+//                 if(path.endsWith('.css')) {
+//                     this.m_generate_logic.cssPath = origin + "/" + path;
+//                 }
+//                 else
+//                 {
+//                     this.m_generate_logic.cssPath = origin  + "/" + path + "/pickPro.css";
+//                 }
+//             }
+//         }
+//     };
 
-    this.m_filter = () => {
-        let alwaysFilter = this.viewSettings.alwaysFilter;
-        if(alwaysFilter.startsWith('@')) {
-            alwaysFilter = alwaysFilter.substring(1, alwaysFilter.length);
-        }
+//     this.load = {
+//         /**
+//          * Load options from content
+//          * 
+//          * And auto detect type pick
+//          * 
+//          * Support of options type:
+//          * ```html
+//          * <!--Image pick -->
+//          * <option value='Value' aria-label='Label'>
+//          *   'ImagePath'
+//          * </option>
+//          * 
+//          * <!--Basic pick -->
+//          * <option value='Value'>
+//          *   'Content'
+//          * </option>
+//          * 
+//          * <!--File pick -->
+//          * <option value='IdValue' mime='example: .png'>
+//          *   'NameFile'
+//          * </option>
+//          * ```
+//          * 
+//          * @param {HTMLSelectElement} selectElement 
+//          */
+//         contentFromSelect : (selectElement) => {
+//             if(selectElement.options.length > 0) {
+//                 this.m_type_pick = 'basic';
+//                 this.m_type_object = new PickProBasicUI(this);
 
-        let searchInput = this.m_elements.nav.search;
-        this.m_elements.options.forEach(
-            /**
-             * @param {HTMLElement} element 
-             */
-            element => {
-            if(element.getAttribute('value') == '' || (element.innerHTML.includes(searchInput.value) || searchInput.value == '' || element.getAttribute('alt').includes(searchInput.value)) && (this.viewSettings.alwaysFilter == '' ? true : element.getAttribute('alt').includes(alwaysFilter)))
-                element.removeAttribute('hidden');
-            else
-                element.setAttribute('hidden', '');
-        });
-    };
+//                 let attribute = selectElement.options[0].getAttribute('mime');
+//                 if(attribute) {
+//                     this.m_type_pick = 'file';
+//                     this.m_type_object = new PickProFileUI(this);
+//                 }
 
-    this.m_mode_file = () => {
-        let docBlank = this.m_window.document;
-        this.m_elements.pickRoot = docBlank.createElement('div');
-        this.m_elements.pickRoot.classList.add(['fileRoot']);
+//                 attribute = selectElement.options[0].getAttribute('aria-label');
+//                 if(attribute) {
+//                     this.m_type_pick = 'image';
+//                     this.m_type_object = new PickProImageUI(this);
+//                 }
+//             }
 
-        docBlank.body.appendChild(this.m_elements.pickRoot);
+//             for(let item of selectElement.options) {
+//                 this.m_content.virtualSelect.object.appendChild(
+//                     item.cloneNode()
+//                 );
 
-        this.pickSelect.querySelectorAll('option').forEach(element => {
-            let optionVirtual = docBlank.createElement('element');
-            this.m_elements.options.push(optionVirtual);
+//                 this.m_content.virtualSelect.object.options[
+//                     this.m_content.virtualSelect.object.options.length - 1
+//                 ].innerHTML = item.innerHTML;
+//             }
 
-            optionVirtual.innerHTML = element.getAttribute('aria-label');
-            optionVirtual.setAttribute('value', element.getAttribute('value'));
-            optionVirtual.setAttribute('alt', element.innerHTML);
+//             if(this.m_generate_logic.autoDetectChanges)
+//                 this.updateContent();
+//         },
 
-            optionVirtual.addEventListener('click', element => {
-                this.m_select_by_value(optionVirtual.getAttribute('value'));
-            });
+//         /**
+//          * Load content from array
+//          * 
+//          * And auto detect type pick
+//          * 
+//          * Example :
+//          * ```js
+//          * // Image pick
+//          * {
+//          *      "Label" : {
+//          *          "Value" : 'Val',
+//          *          "FilePath" : "/test.png"
+//          *      }
+//          * }
+//          * 
+//          * // File pick
+//          * {
+//          *      "FileName" : {
+//          *          "Value" : 'Val',
+//          *          "Mime" : '.png',
+//          *      }
+//          * }
+//          * 
+//          * // Basic pick
+//          * {
+//          *      "FileName" : {
+//          *          "Value" : 'Val'
+//          *      }
+//          * }
+//          * ```
+//          * 
+//          * @param {{name : {arg1 : string, arg2 : string}}} array 
+//          */
+//         contentFromArray : (array) => {
 
-            this.m_elements.pickRoot.appendChild(optionVirtual);
-        });
 
-        let emptyOption = docBlank.createElement('div');
-        emptyOption.classList.add('file-empty');
+//             if(this.m_generate_logic.autoDetectChanges)
+//                 this.updateContent();
+//         }
+//     };
 
-        this.m_elements.pickRoot.appendChild(emptyOption);
+//     this.get = {
+//         htmlSelect : () => {
+//             return this.m_content.virtualSelect.object;
+//         } 
+//     };
 
-        this.m_filter();
-    };
+//     this.object = {
+//         add : (element) => {
+//             if(typeof(element) == 'string') {
+//                 let text = element;
+//                 element = document.createElement('span')
+//                 element.innerHTML = text;
+//             }
 
-    this.m_mode_image = () => {
-        let docBlank = this.m_window.document;
-        this.m_elements.pickRoot = docBlank.createElement('div');
-        this.m_elements.pickRoot.classList.add(['imageRoot']);
-
-        docBlank.body.appendChild(this.m_elements.pickRoot);
-
-        this.pickSelect.querySelectorAll('option').forEach(element => {
-            let optionVirtual = docBlank.createElement('element');
-            this.m_elements.options.push(optionVirtual);
-            optionVirtual.setAttribute('alt', element.innerHTML);
-
-            if(element.getAttribute('value') != '') {
-                let img = docBlank.createElement('img');
-                img.src = element.innerHTML;
-    
-                img.onerror = () => {
-                    let errorDiv = docBlank.createElement('div');
-                    img.before(errorDiv);
-                    img.remove();
-    
-                    errorDiv.innerHTML = 'preview <br> not found'
-    
-                    errorDiv.classList.add(['img']);
-                }
-    
-                optionVirtual.appendChild(img);
-            }
-
-            let text = docBlank.createElement('div');
-            text.innerHTML = element.getAttribute('aria-label');
-
-            optionVirtual.appendChild(text);
-
-            optionVirtual.setAttribute('value', element.getAttribute('value'));
-
-            optionVirtual.addEventListener('click', element => {
-                this.m_select_by_value(optionVirtual.getAttribute('value'));
-            });
-
-            this.m_elements.pickRoot.appendChild(optionVirtual);
-        });
-
-        let empty = docBlank.createElement('div');
-        empty.classList.add(['empty-footer']);
-
-        let changeInput = () => {
-            let val = sizeOf.value;
-            this.m_elements.pickRoot.style.gridAutoRows = `calc(100vw / ${val})`;
-            this.m_elements.pickRoot.style.gridTemplateColumns = `repeat(${val}, 1fr)`;
-            this.m_elements.pickRoot.style.fontSize = `calc(10vw / ${val})`;
-        }
-
-        let sizeOf = docBlank.createElement('input');
-        sizeOf.setAttribute('as-size', '');
-        sizeOf.type = 'range'
-        sizeOf.min = 3;
-        sizeOf.max = 8;
-        sizeOf.value = 5;
-
-        sizeOf.addEventListener('input', element => {
-            changeInput();
-        });
-
-        changeInput();
-
-        this.m_elements.nav.footer.appendChild(sizeOf);
-
-        this.m_elements.pickRoot.after(empty);
-        this.m_elements.empty = empty;
-        this.m_filter();
-    };
-};
-
-window.addEventListener('load', () => {
-    document.querySelectorAll('input[type=pick-on-server]').forEach(element=>{
-        let pickObject = new PickPro();
-        pickObject.virtualTable.createTable();
-
-        let init = false;
-
-        let prompt = element.getAttribute('prompt');
-        if(prompt)
-            pickObject.addPrompt(prompt);
-
-        window.addEventListener('focus', () => {
-            pickObject.m_keep_selectedIndex.index = pickObject.pickSelect.selectedIndex;
-            pickObject.m_keep_selectedIndex.value = pickObject.pickSelect.options[pickObject.pickSelect.selectedIndex].value;
+//             switch(this.m_where_add) {
+//                 case '*':
+//                     this.m_window.window.document.body.appendChild(
+//                         element
+//                     );
+//                     break;
+//                 case 'inner':
+//                     this.m_content.inner.object.appendChild(
+//                         element
+//                     );
+//                     break;
+//                 case 'header':
+//                     this.m_content.nav.object.appendChild(
+//                         element
+//                     );
+//                     break;
+//                 case 'footer':
+//                     this.m_content.footer.object.appendChild(
+//                         element
+//                     );
+//                     break;
+//             }
+//         },
+//         appendChild : (element, parent, how = 'in') => {
+//             switch(how) {
+//                 case 'in':
+//                     parent.appendChild(element);
+//                     break;
+//                 case 'after':
+//                     parent.after(element);
+//                     break;
+//                 case 'before':
+//                     parent.before(element);
+//                     break;
+//             }
+//         },
+//         setCss : (href) => {
+//             let link = document.createElement('link');
+//             link.rel = 'stylesheet';
+//             link.type = 'text/css';
+//             link.href = href;
             
-            ajaxLogic();
-        });
-        pickObject.onaddfileend = () => {
-            pickObject.m_keep_selectedIndex.index = pickObject.pickSelect.selectedIndex;
-            pickObject.m_keep_selectedIndex.value = pickObject.pickSelect.options[pickObject.pickSelect.selectedIndex].value;
+//             this.m_window.window.document.head.appendChild(
+//                 link
+//             );
+//         }
+//     };
 
-            pickObject.clearContent();
+//     this.set = {
+//         /**
+//          * create own rule for own design
+//          * 
+//          * Example:
+//          * ```html
+//          * <option value="test" self-type="Something">Data</option>
+//          * ```
+//          * In JS:
+//          * ```js
+//          * class SelfUI {
+//          *   constructor(parent) {
+//          *      this.parent = parent
+//          *   }  
+//          * 
+//          *   function drawInner() {
+//          *      this.parent.add.object('test');
+//          *   }
+//          * }
+//          * 
+//          * modal.set.ruleUI(
+//          *    (PickRuleObject) => {
+//          *       if(PickRuleObject.has('self-type')) {
+//          *          return true;
+//          *       }
+//          *       return false;
+//          *    },
+//          *    SelfUI
+//          * );
+//          * ```
+//          * 
+//          * @param {Function} filterFunction 
+//          * @param {Object} classObject 
+//          */
+//         ruleUI : (filterFunction, classObject) => {
+//             this.m_self_rules_ui = {
+//                 func : filterFunction,
+//                 class : classObject
+//             }
+//         }
+//     }
 
-            ajaxLogic();
-        };
+//     /**
+//      * Just open modal window with picker.
+//      * 
+//      * @param {string} title 
+//      * @param {number} width 
+//      * @param {number} height 
+//      */
+//     this.open = function(title = 'Test', width = 400, height = 400) {
+//         if(this.m_window.window == null || this.m_window.window.closed) {
+//             this.m_window.title = title;
+//             this.m_window.width = width;
+//             this.m_window.height = height;
+    
+//             this.m_window.window = window.open('', this.m_window.title, `width=${this.m_window.width},height=${this.m_window.height}`);
 
-        let nameInput = element.getAttribute('name');
-        if(nameInput)
-            pickObject.pickSelect.name = nameInput;
+//             if(this.m_generate_logic.autoDetectChanges)
+//                 this.m_open_event();
+//         }
+//     };
 
-        pickObject.viewSettings.pathToCss = location.origin + (Settings.PickPro.defaultCssDir == '' ? '' : '/'+Settings.PickPro.defaultCssDir);
-
-        let disabled = true;
-        let error = false;
-        let value = element.getAttribute('value');
-
-        let alwaysFilter = element.getAttribute('filter');
-        if(alwaysFilter) 
-            pickObject.viewSettings.alwaysFilter = alwaysFilter;
-
-        let input = document.createElement('div');
-        let classes = element.getAttribute('class');
-        let style = element.getAttribute('style');
-
-        let hrefAjax = element.getAttribute('href');
-
-        let asLogic = element.getAttribute('as');
-        if(!asLogic)
-            asLogic = 'file';
-
-        if(classes)
-            input.setAttribute('class', classes + ' input-pick');
-        else 
-            input.setAttribute('class', 'input-pick');
-
-        if(style)
-            input.setAttribute('style', style);
-
-        let textField = document.createElement('span');
-        textField.innerText = 'Loading...';
-        input.appendChild(textField);
-
-        if(asLogic == 'image') {
-            pickObject.viewSettings.mode = asLogic;
-
-            let innerImage = document.createElement('img');
-            innerImage.height = "100%";
-            textField.before(innerImage);
-
-            pickObject.onreturn = () => {
-                if(pickObject.returnValue.value != '') {
-                    innerImage.hidden = false;
-                    innerImage.src = pickObject.returnValue.name;
-                }
-                else {
-                    innerImage.hidden = true;
-                }
-                textField.innerText = pickObject.returnValue.label;
-            };
-        }
-
-        pickObject.pickSelect.hidden = 'true';
-        pickObject.pickSelect.name = element.name;
-        input.appendChild(pickObject.pickSelect);
-
-        let isFetching = false;
-        let ajaxLogic = () => {
-            pickObject.clearContent();
-            pickObject.virtualTable.items.clean();
+//     this.updateContent = () => {
+//         if(this.m_window.window != null && this.m_window.window.closed == false) {
+//             if(this.m_content.inner.object != null)
+//                 this.m_content.inner.object.innerHTML = '';
             
-            error = false;
-            disabled = true;
+//             this.m_where_add = 'inner';
+//             this.m_type_object.drawInner();
+//             this.m_where_add = '*';
+//         }
+//     };
 
-            if(isFetching == false) {
-                isFetching = true;
-                fetch(hrefAjax,{
-                    mode: 'no-cors',
-                    method: 'GET'
-                }).then(e => e.json()).then(e => {
-                    if(!error) {
-                        isFetching = false;
-                        pickObject.virtualTable.items.assign(e);
-                        disabled = false;
+//     /**
+//      * # Filter works always
+//      * 
+//      * This filter works like sort items,
+//      * and display some content.
+//      * 
+//      * Basic filter:
+//      * ```js
+//      * pickModal.setFilter('uploads');
+//      * ```
+//      * 
+//      * Folder filter:
+//      * ```js
+//      * pickModal.setFilter('/uploads');
+//      * ```
+//      * 
+//      * Internet filter:
+//      * ```js
+//      * pickModal.setFilter('@uploads');
+//      * ```
+//      * 
+//      * Tag filter:
+//      * ```js
+//      * pickModal.setFilter('#uploads');
+//      * ```
+//      * 
+//      * Author filter:
+//      * ```js
+//      * pickModal.setFilter('*uploads');
+//      * ``` 
+//      * 
+//      * @param {string} value 
+//      */
+//     this.setFilter = function (value) {
+//         if(value.startsWith('/')) {
+//             this.m_filter.name = value.substring(1, value.length);
+//             this.m_filter.type = "direction";
+//         }
+//         else if(value.startsWith('@')) {
+//             this.m_filter.name = value.substring(1, value.length);
+//             this.m_filter.type = "internet";
+//         }
+//         else if(value.startsWith('#')) {
+//             this.m_filter.name = value.substring(1, value.length);
+//             this.m_filter.type = "tag";
+//         }
+//         else if(value.startsWith('*')) {
+//             this.m_filter.name = value.substring(1, value.length);
+//             this.m_filter.type = "author";
+//         }
+//         else {
+//             this.m_filter.name = value;
+//             this.m_filter.type = null;
+//         }
+//     };
+
+//     this.m_open_event = () => {
+//         this.m_where_add = '*';
+//         this.object.setCss(this.m_generate_logic.cssPath);
+//         let header = document.createElement('header');
     
-                        if(init == false) {
-                            if(value != null){
-                                pickObject.virtualTable.items.selectByValue(value);
-                            }
-                            else {
-                                pickObject.virtualTable.items.select();
-                            }
-    
-                            init = true;
-                        }
-                        else {
-                            pickObject.virtualTable.items.select();
-                            pickObject.reloadData();
-                        }
-    
-                        if(pickObject.onreturn)
-                            pickObject.onreturn();
-                    }
-                });
-            }
+
+//         this.object.add(header);
+//         this.m_content.nav.object = header;
+
+//         let inner = document.createElement('main');
             
-        };
 
-        input.addEventListener('click', event => {
-            if(disabled == false) {
-                pickObject.open();
-            }
-            else {
-                if(error) {
-                    let anim = input.animate([
-                        { borderColor: "red" },
-                        { borderColor: "gray" }
-                    ],{
-                        'duration' : 800
-                    });
-                    anim.play();
-                    anim.onfinish = () => {
-                        input.style.removeProperty('borderColor');
-                    };
-                }
-                else {
-                    let anim = input.animate([
-                        { borderColor: "yellow" },
-                        { borderColor: "gray" }
-                    ],{
-                        'duration' : 800
-                    });
-                    anim.play();
-                    anim.onfinish = () => {
-                        input.style.removeProperty('borderColor');
-                    };
-                }
-            }
-        });
+//         this.object.add(inner);
+//         this.m_content.inner.object = inner;
 
-        element.before(input);
-        element.remove();
-        ajaxLogic();
-    });
+//         let footer = document.createElement('footer');
+            
 
-});
+//         this.object.add(footer);
+//         this.m_content.footer.object = footer;
+
+//         if(this.m_type_object != null) {
+//             this.m_where_add = 'header';
+//             this.m_type_object.drawHeader();
+//             this.m_where_add = 'inner';
+//             this.m_type_object.drawInner();
+//             this.m_where_add = 'footer';
+//             this.m_type_object.drawFooter();
+//             this.m_where_add = '*';
+//         }
+//     }
+
+//     (() => {
+//         this.m_content.virtualSelect.object = document.createElement('select');
+//     }).call()
+// };

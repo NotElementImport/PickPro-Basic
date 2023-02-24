@@ -1,10 +1,30 @@
-let pickTest = new PickPro(
-    document.querySelector('select[name=Example]')
-);
+// let pickInterface = new PickProInterface();
+// pickInterface.params.setCssRoute('');
 
-pickTest.viewSettings.mode = 'image';
-pickTest.viewSettings.pathToCss = 'http://127.0.0.1:5500/';
+// let button = document.querySelector('button');
 
-function pickOpen() {
-    pickTest.open();
-}
+// button.after(pickInterface.get.htmlSelect());
+
+// let pickTest = () => {
+//     pickInterface.load.contentFromSelect(
+//         document.querySelector('select[name=Example]')
+//     );
+
+//     pickInterface.params.autoDetectChanges(true);
+//     pickInterface.open('test', 640, 400);
+// }
+
+let data = new PickFileUI(null);
+
+PickUI.createObject('div')
+    .putChild(PickUI.createObject())
+    .thread(object => {
+        PickUI.object(object)
+            .beALastChildren()
+            .addStyle({
+                'background-color' : '#ddd',
+                'padding' : '1em'
+            })
+            .display()
+    })
+    .display();
